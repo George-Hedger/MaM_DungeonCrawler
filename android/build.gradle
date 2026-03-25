@@ -9,7 +9,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-  namespace = "io.github.LibGDX_DungeonCrawler"
+  namespace = "io.github.libgdx_dungeon_crawler"
   compileSdk = 35
   sourceSets {
     main {
@@ -31,7 +31,7 @@ android {
 		}
   }
   defaultConfig {
-    applicationId 'io.github.LibGDX_DungeonCrawler'
+    applicationId 'io.github.libgdx_dungeon_crawler'
     minSdkVersion 21
     targetSdkVersion 35
     versionCode 1
@@ -50,7 +50,7 @@ android {
   }
 
   kotlin.compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
-  
+
 }
 
 repositories {
@@ -130,7 +130,7 @@ tasks.register('run', Exec) {
   }
 
   def adb = path + "/platform-tools/adb"
-  commandLine "$adb", 'shell', 'am', 'start', '-n', 'io.github.LibGDX_DungeonCrawler/io.github.LibGDX_DungeonCrawler.android.AndroidLauncher'
+  commandLine "$adb", 'shell', 'am', 'start', '-n', 'io.github.libgdx_dungeon_crawler/io.github.libgdx_dungeon_crawler.android.AndroidLauncher'
 }
 
 eclipse.project.name = appName + "-android"

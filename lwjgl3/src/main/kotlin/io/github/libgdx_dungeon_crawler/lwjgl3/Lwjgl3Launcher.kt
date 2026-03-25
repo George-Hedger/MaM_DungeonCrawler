@@ -1,10 +1,10 @@
 @file:JvmName("Lwjgl3Launcher")
 
-package io.github.LibGDX_DungeonCrawler.lwjgl3
+package io.github.libgdx_dungeon_crawler.lwjgl3
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
-import io.github.LibGDX_DungeonCrawler.Main
+import io.github.libgdx_dungeon_crawler.Main
 
 /** Launches the desktop (LWJGL3) application. */
 fun main() {

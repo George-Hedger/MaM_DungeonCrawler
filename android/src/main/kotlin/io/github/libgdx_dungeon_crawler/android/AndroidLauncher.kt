@@ -1,10 +1,10 @@
-package io.github.LibGDX_DungeonCrawler.android
+package io.github.libgdx_dungeon_crawler.android
 
 import android.os.Bundle
 
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
-import io.github.LibGDX_DungeonCrawler.Main
+import io.github.libgdx_dungeon_crawler.Main
 
 /** Launches the Android application. */
 class AndroidLauncher : AndroidApplication() {

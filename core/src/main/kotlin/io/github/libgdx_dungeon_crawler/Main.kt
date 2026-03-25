@@ -1,4 +1,4 @@
-package io.github.LibGDX_DungeonCrawler
+package io.github.libgdx_dungeon_crawler
 
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
