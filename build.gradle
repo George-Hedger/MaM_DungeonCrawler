@@ -69,6 +69,16 @@ subprojects {
     maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
     maven { url = 'https://jitpack.io' }
   }
+
+  configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+      if (details.requested.name == 'vis-ui') {
+        details.useVersion '1.5.5'
+        // Optional: force the group to match the Maven Central one
+        details.useTarget "com.kotcrab.vis:vis-ui:1.5.5"
+      }
+    }
+  }
 }
 
 eclipse.project.name = 'DungeonCrawler' + '-parent'
