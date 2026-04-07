@@ -11,7 +11,7 @@ This project was generated with a Kotlin project template that includes Kotlin a
 - `android`: Android mobile platform. Needs Android SDK.
 
 ## Gradle
- 
+
 This project uses [Gradle](https://gradle.org/) to manage dependencies.
 The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
 Useful Gradle tasks and flags:
