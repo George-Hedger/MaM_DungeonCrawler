@@ -16,7 +16,8 @@ class Main : KtxGame<KtxScreen>() {
         KtxAsync.initiate()
 
         addScreen(FirstScreen())
-        setScreen<FirstScreen>()
+        addScreen(MainMenuScreen())
+        setScreen<MainMenuScreen>()
     }
 }
 
