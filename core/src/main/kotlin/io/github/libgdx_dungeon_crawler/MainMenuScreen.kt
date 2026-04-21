@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import ktx.app.KtxInputAdapter
 import ktx.app.KtxScreen
+import ktx.scene2d.scene2d;
 
 class MainMenuScreen : KtxInputAdapter, KtxScreen {
 
