@@ -1,6 +1,9 @@
+
 package io.github.libgdx_dungeon_crawler
 
 import java.nio.ByteBuffer
+import kotlin.toUByte
+import kotlin.toUShort
 
 // ---------------------------------------------------
 // GameMessages must implement this interface
@@ -21,11 +24,14 @@ interface Deserializable {
 // encoded/decoded from a byte stream.
 // ---------------------------------------------------
 enum class GameMessageType(val type: Byte) {
-    REGISTER(1),
-    PLAYER_MOVE(2);
+    REGISTER(0.toByte()),
+    ERROR(1.toByte()),
+    SUCCESS(2.toByte()),
+    INFO(3.toByte()),
+    TILE_UPDATE(4.toByte());
 
     companion object {
-        fun fromByte(type: Byte) = entries.first { it.type == type }
+        fun fromByte(type: Byte) = entries.first { it.type.toByte() == type }
     }
 }
 
@@ -33,21 +39,19 @@ enum class GameMessageType(val type: Byte) {
 // Our various GameMessage implementations
 // ---------------------------------------------------
 sealed class GameMessage(val type: GameMessageType) : Serializable {
-
     data class RegisterMessage(val playerName: String) : GameMessage(GameMessageType.REGISTER) {
         override fun serialize() : ByteArray {
-            // pretend it does what it is supposed to
-            return ByteArray(10)
+            val ba = ByteArray(2)
+            ba[0] = type.type
+            ba[1] = playerName.length.toUShort().toByte()
+
+            return ba + playerName.toByteArray()
         }
 
         companion object : Deserializable {
             override fun deserialize(bb: ByteBuffer) : GameMessage {
-                // pretend it does what it is supposed to
-                // i.e. the name is taken from the ByteBuffer
-                //      as seen previously
-                val nameLength = bb.get().toInt()
+                val nameLength = bb.get().toUShort().toInt()
                 val rawName = ByteArray(nameLength)
-
                 bb.get(rawName)
 
                 return RegisterMessage(String(rawName, Charsets.UTF_8))
@@ -55,31 +59,93 @@ sealed class GameMessage(val type: GameMessageType) : Serializable {
         }
     }
 
-    data class PlayerMoveMessage(val x: Float, val y: Float) : GameMessage(GameMessageType.REGISTER) {
+    data class ErrorMessage(val errorMessage: String, val code : Short) : GameMessage(GameMessageType.ERROR) {
         override fun serialize() : ByteArray {
-            // pretend it does what it is supposed to
-            // i.e. the x, y values are taken from the ByteArray
-            //      as seen previously
+            val ba = ByteArray(3)
+            ba[0] = type.type
+            ba[1] = code.toByte()
+            ba[2] = errorMessage.length.toUShort().toByte()
 
-            return ByteArray(10)
+            return ba + errorMessage.toByteArray()
         }
 
         companion object : Deserializable {
             override fun deserialize(bb: ByteBuffer) : GameMessage {
-                // pretend it does what it is supposed to
-                // i.e. the data is taken from the ByteArray
+                val code = bb.get().toShort()
+                val messageLength = bb.get().toUShort().toInt()
+                val rawName = ByteArray(messageLength)
+                bb.get(rawName)
 
-                return PlayerMoveMessage(1.5f, 2.5f)
+                return ErrorMessage(String(rawName, Charsets.UTF_8), code)
             }
         }
     }
 
+    data class SuccessMessage(val code : Short) : GameMessage(GameMessageType.SUCCESS) {
+        override fun serialize() : ByteArray {
+            val ba = ByteArray(2)
+            ba[0] = type.type
+            ba[1] = code.toByte()
+            return ba
+        }
+
+        companion object : Deserializable {
+            override fun deserialize(bb: ByteBuffer) : GameMessage {
+                val code = bb.get().toShort()
+
+                return SuccessMessage(code)
+            }
+        }
+    }
+
+    data class InfoMessage(val details: String, val payload : Short) : GameMessage(GameMessageType.INFO) {
+        override fun serialize() : ByteArray {
+            val ba = ByteArray(3)
+            ba[0] = type.type
+            ba[1] = payload.toByte()
+            ba[2] = details.length.toUShort().toByte()
+
+            return ba + details.toByteArray()
+        }
+
+        companion object : Deserializable {
+            override fun deserialize(bb: ByteBuffer) : GameMessage {
+                val payload = bb.get().toShort()
+                val messageLength = bb.get().toUShort().toInt()
+                val rawName = ByteArray(messageLength)
+                bb.get(rawName)
+
+                return InfoMessage(String(rawName, Charsets.UTF_8), payload)
+            }
+        }
+    }
+
+    data class TileUpdateMessage(val x : Short, val y : Short, val occupiedId : Short) : GameMessage(GameMessageType.TILE_UPDATE) {
+        override fun serialize() : ByteArray {
+            val ba = ByteArray(4)
+            ba[0] = type.type
+            ba[1] = x.toByte()
+            ba[2] = y.toByte()
+            ba[3] = occupiedId.toByte()
+            return ba
+        }
+
+        companion object : Deserializable {
+            override fun deserialize(bb: ByteBuffer) : GameMessage {
+                val x = bb.get().toShort()
+                val y = bb.get().toShort()
+                val occupiedId = bb.get().toShort()
+
+                return TileUpdateMessage(x,y,occupiedId)
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------
 // GameMessageFactory
 // ---------------------------------------------------
-class GameMessageFactory {
+object GameMessageFactory {
     fun createGameMessage(ba: ByteArray) : GameMessage {
         // ------------------------------------------------------------------------
         // Factory determines correct type and how to manage the vararg params
@@ -93,12 +159,20 @@ class GameMessageFactory {
 
             GameMessageType.REGISTER -> GameMessage.RegisterMessage.deserialize(bb)
 
-            GameMessageType.PLAYER_MOVE -> GameMessage.PlayerMoveMessage.deserialize(bb)
+            GameMessageType.ERROR -> GameMessage.ErrorMessage.deserialize(bb)
+
+            GameMessageType.SUCCESS -> GameMessage.SuccessMessage.deserialize(bb)
+
+            GameMessageType.INFO -> GameMessage.InfoMessage.deserialize(bb)
+
+            GameMessageType.TILE_UPDATE -> GameMessage.TileUpdateMessage.deserialize(bb)
         }
     }
 }
 
+
 /*
+
 fun main() {
     val factory = GameMessageFactory()
 
@@ -120,3 +194,4 @@ fun main() {
     val ba = gm1.serialize()
 }
 */
+
