@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.utils.viewport.ScreenViewport
@@ -23,19 +22,17 @@ class LoadingScreen(private val game: Main) : KtxScreen {
         val base = Table()
         root.add(base)
 
-        base.setBackground(skin.getTiledDrawable("tile-a"))
+        base.setBackground(game.skin.getTiledDrawable("tile-a"))
 
-        skin.getFont("font").data.scale(1f)
-
-        val table = Table(skin)
+        val table = Table(game.skin)
         table.setBackground("window-c")
         base.add<Table?>(table).height(300f).width(600.0f)
 
-        label = Label("Waiting for players...", skin)
+        label = Label("Waiting for players...", game.skin)
         table.add<Label?>(label).expandX().center()
 
         table.row()
-        playersLabel = Label("Players:", skin)
+        playersLabel = Label("Players:", game.skin)
         table.add<Label?>(playersLabel).expandX().center()
 
         NetClient.sendMessage(GameMessage.InfoMessage("CurrentPlayers", 0.toShort()))
@@ -43,14 +40,12 @@ class LoadingScreen(private val game: Main) : KtxScreen {
     }
 
     val stage = Stage(ScreenViewport())
-    val skin = Skin(Gdx.files.internal("terra-mother/skin/terra-mother-ui.json"))
 
     var maxPlayers = 0
     var currentPlayers = 0
     var mapX = 0
     var mapY = 0
     var updates = 0
-    var updateTargets = -1
 
     lateinit var label : Label
     lateinit var playersLabel : Label
@@ -90,13 +85,6 @@ class LoadingScreen(private val game: Main) : KtxScreen {
                 else if(message.details == "MapY"){
                     mapY = message.payload.toInt()
                 }
-                else if(message.payload == (-1).toShort()){
-                    updateTargets = message.details.toInt()
-
-                    if(updateTargets != -1)
-                        if(updates == updateTargets)
-                            NetClient.sendMessage(GameMessage.SuccessMessage(2.toShort()))
-                }
 
                 if(mapX != 0 && mapY != 0){
                     game.map = Map(mapX, mapY)
@@ -106,13 +94,23 @@ class LoadingScreen(private val game: Main) : KtxScreen {
             else if(message is GameMessage.RegisterMessage) {
                 label.setText(message.playerName)
             }
-            else if(message is GameMessage.TileUpdateMessage){
+            else if(message is GameMessage.LoadMapMessage){
                 updates++
-                game.map.tiles[message.y.toInt()][message.x.toInt()] = message.occupiedId
 
-                if(updateTargets != -1)
-                    if(updates == updateTargets)
-                        NetClient.sendMessage(GameMessage.SuccessMessage(2.toShort()))
+                for (x in 0..<(mapX-1)) {
+                    game.map.tiles[message.y.toInt()][x] = message.tiles[x]
+                }
+
+                if(updates == mapY)
+                    NetClient.sendMessage(GameMessage.SuccessMessage(2.toShort()))
+            }
+            else if(message is GameMessage.SuccessMessage){
+                if(message.code.toInt() == 3){
+                    game.setScreen<GameScreen>()
+                }
+            }
+            else{
+                println("Unneeded message")
             }
         }
 
@@ -125,7 +123,6 @@ class LoadingScreen(private val game: Main) : KtxScreen {
     }
 
     override fun dispose() {
-        skin.disposeSafely()
         stage.disposeSafely()
     }
 

@@ -2,13 +2,11 @@ package io.github.libgdx_dungeon_crawler
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Container
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Stack
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
@@ -32,30 +30,28 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
         val base = Table()
         root.add(base)
 
-        base.setBackground(skin.getTiledDrawable("tile-a"))
+        base.setBackground(game.skin.getTiledDrawable("tile-a"))
 
-        skin.getFont("font").data.scale(1f)
-
-        val image = Image(skin, "label-title")
+        val image = Image(game.skin, "label-title")
         base.add<Image?>(image)
 
         base.row()
-        var table = Table(skin)
+        var table = Table(game.skin)
         table.setBackground("window-c")
         base.add<Table?>(table).height(100.0f).width(200.0f)
 
-        var label = Label("Config:", skin)
+        var label = Label("Config:", game.skin)
         table.add<Label?>(label).expandX().center()
 
         base.row()
         ipTable.setBackground("window-c")
         base.add<Table?>(ipTable).width(300f).height(140.0f)
 
-        label = Label("IP Address:", skin)
+        label = Label("IP Address:", game.skin)
         ipTable.add<Label?>(label)
 
         ipTable.row()
-        ipText = TextField("127.0.0.1", skin)
+        ipText = TextField("127.0.0.1", game.skin)
         ipText.setTextFieldListener(TextField.TextFieldListener(
             fun(event : TextField, c: Char){
                 if(event.text.length > 15 || !(c.isDigit() || c.isISOControl() || c == '.')) {
@@ -70,11 +66,11 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
         portTable.setBackground("window-c")
         base.add<Table?>(portTable).width(300f).height(140.0f)
 
-        label = Label("Port:", skin)
+        label = Label("Port:", game.skin)
         portTable.add<Label?>(label)
 
         portTable.row()
-        portText = TextField("3000", skin)
+        portText = TextField("3000", game.skin)
         portText.setTextFieldListener(TextField.TextFieldListener(
             fun(event : TextField, c: Char){
                 if(event.text.length > 5 || !(c.isDigit() || c.isISOControl())) {
@@ -90,11 +86,11 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
         nameTable.setBackground("window-c")
         base.add<Table?>(nameTable).width(300f).height(140.0f)
 
-        label = Label("Name:", skin)
+        label = Label("Name:", game.skin)
         nameTable.add<Label?>(label)
 
         nameTable.row()
-        nameText = TextField(username, skin)
+        nameText = TextField(username, game.skin)
         nameText.setTextFieldListener(TextField.TextFieldListener(
             fun(event : TextField, c: Char){
                 if(event.text.length > 10 || !(c.isDefined() || !c.isWhitespace() || c.isISOControl())) {
@@ -108,11 +104,11 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
         nameTable.add<TextField?>(nameText).right()
 
         base.row()
-        table = Table(skin)
+        table = Table(game.skin)
         table.setBackground("window-c")
         base.add<Table?>(table).width(220f).height(80.0f)
 
-        loginButton = TextButton("Login", skin)
+        loginButton = TextButton("Login", game.skin)
         loginButton.addListener(object : ClickListener() {
             override fun clicked(e: InputEvent?, x: Float, y: Float) {
                 if(!isConnected) {
@@ -139,18 +135,18 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
 
         errorTable.setFillParent(true)
         errorTable.isVisible = false
-        errorTable.setBackground(skin.getTiledDrawable("tile-a"))
+        errorTable.setBackground(game.skin.getTiledDrawable("tile-a"))
         root.add(errorTable)
 
-        table = Table(skin)
+        table = Table(game.skin)
         table.setBackground("window-c")
         errorTable.add<Table?>(table).width(700f).height(400F)
 
-        errorLabel = Label("ERROR: ", skin)
+        errorLabel = Label("ERROR: ", game.skin)
         table.add<Label?>(errorLabel)
 
         table.row()
-        val button = TextButton("Dismiss", skin)
+        val button = TextButton("Dismiss", game.skin)
         button.addListener(object : ClickListener() {
             override fun clicked(e: InputEvent?, x: Float, y: Float) {
                 errorTable.isVisible = false
@@ -162,16 +158,15 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
     }
 
     val stage = Stage(ScreenViewport())
-    val skin = Skin(Gdx.files.internal("terra-mother/skin/terra-mother-ui.json"))
-    val errorTable = Table(skin)
+    val errorTable = Table(game.skin)
     lateinit var errorLabel : Label
     lateinit var loginButton : TextButton
     lateinit var ipText : TextField
     lateinit var portText : TextField
     lateinit var nameText : TextField
-    val portTable = Table(skin)
-    val ipTable = Table(skin)
-    val nameTable = Table(skin)
+    val portTable = Table(game.skin)
+    val ipTable = Table(game.skin)
+    val nameTable = Table(game.skin)
     var isConnected = false
     var username = "username"
 
@@ -228,7 +223,7 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
     }
 
     override fun dispose() {
-        skin.disposeSafely()
+        game.skin.disposeSafely()
         stage.disposeSafely()
     }
 

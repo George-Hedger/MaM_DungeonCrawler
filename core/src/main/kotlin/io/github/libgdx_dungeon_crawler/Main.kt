@@ -22,6 +22,9 @@ class Main : KtxGame<KtxScreen>() {
     override fun create() {
         KtxAsync.initiate()
 
+        skin = Skin(Gdx.files.internal("terra-mother/skin/terra-mother-ui.json"))
+        skin.getFont("font").data.scale(1f)
+
         addScreen(MainMenuScreen(this))
         addScreen(LoadingScreen(this))
         addScreen(GameScreen(this))
@@ -42,24 +45,7 @@ class Main : KtxGame<KtxScreen>() {
         setScreen<LoadingScreen>()
     }
 
+    lateinit var skin : Skin
     lateinit var playerName : String
-
     lateinit var map : Map
-}
-
-class FirstScreen : KtxScreen {
-    private val image = Texture("logo.png".toInternalFile(), true).apply { setFilter(Linear, Linear) }
-    private val batch = SpriteBatch()
-
-    override fun render(delta: Float) {
-        clearScreen(red = 0.7f, green = 0.7f, blue = 0.7f)
-        batch.use {
-            it.draw(image, 100f, 160f)
-        }
-    }
-
-    override fun dispose() {
-        image.disposeSafely()
-        batch.disposeSafely()
-    }
 }

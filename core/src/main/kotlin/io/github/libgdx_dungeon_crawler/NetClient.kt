@@ -1,7 +1,7 @@
 package io.github.libgdx_dungeon_crawler
 
+import java.nio.ByteBuffer
 import kotlinx.coroutines.*
-import kotlinx.coroutines.time.delay
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
@@ -24,20 +24,70 @@ object NetClient {
             CoroutineScope(Dispatchers.IO).launch {
                 sendMessageLoop()
 
+                var partial = false
+                var expected = 0
+
+                var message_buffer : ByteBuffer
+                var ba = ByteArray(0)
+                var buffer_size = 0
+
                 while (!socket.isClosed) {
-                    val ba = ByteArray(1024)
+                    var length : Int
+                    val read = ByteArray(1024)
 
-                    var read: Int
-                    instream.read(ba).also { read = it }
+                    try {
+                        instream.read(read).also { length = it }
+                    }
+                    catch (error : Exception){
+                        stopServer()
+                        break
+                    }
 
-                    val output = String(ba, 0, read)
+                    if(length > 0) {
+                        buffer_size += length
+                        message_buffer = ByteBuffer.wrap((ba + read), 0, buffer_size)
 
-                    System.out.flush()
-                    println("New Message: $output")
+                        var loop = true;
 
-                    queue.add(output)
+                        while (loop) {
+                            loop = false
+
+                            if (!partial) {
+                                expected = message_buffer.get().toShort().toInt()
+                                buffer_size--
+                            } else {
+                                partial = false;
+                            }
+
+                            if (buffer_size >= expected) {
+                                val msg = ByteArray(expected)
+                                message_buffer.get(msg)
+                                addMessage(String(msg))
+                                buffer_size -= expected;
+
+                                if (buffer_size > expected && expected != 0)
+                                    loop = true;
+                                else
+                                    message_buffer.clear();
+                            } else {
+                                println("Received partial from server")
+
+                                partial = true;
+                            }
+                        }
+
+                        ba = ByteArray(buffer_size)
+                        message_buffer.get(ba)
+                    }
                 }
             }
+
+        fun addMessage(output: String){
+            System.out.flush()
+            println("New Message: $output")
+
+            queue.add(output)
+        }
 
         fun sendMessageLoop() =
             CoroutineScope(Dispatchers.IO).launch {
