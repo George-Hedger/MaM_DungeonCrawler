@@ -48,4 +48,6 @@ class Main : KtxGame<KtxScreen>() {
     lateinit var skin : Skin
     lateinit var playerName : String
     lateinit var map : Map
+
+    var id : Short = -1
 }

@@ -115,7 +115,7 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
                     println("Attempting connection to the server.")
                     if (NetClient.tryConnect(ipText.text, portText.text.toInt())) {
                         println("Connected to the server.")
-                        onConnectToServer()
+                        onConnectToServer(true)
                     } else {
                         println("Could not connect to the server.")
                         showError("Could not connect to the server.")
@@ -175,12 +175,15 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
         errorLabel.setText("ERROR: $message")
     }
 
-    fun onConnectToServer(){
-        isConnected = true
-        ipTable.isVisible = false
-        portTable.isVisible = false
-        nameTable.isVisible = true
-        loginButton.setText("Join Game")
+    fun onConnectToServer(connected: Boolean){
+        isConnected = connected
+        ipTable.isVisible = !connected
+        portTable.isVisible = !connected
+        nameTable.isVisible = connected
+        if(connected)
+            loginButton.setText("Join Game")
+        else
+            loginButton.setText("Login")
     }
 
     override fun pause() {
@@ -206,12 +209,18 @@ class MainMenuScreen(private val game: Main) : KtxScreen {
 
                 if(message.code == 1.toShort()){
                     NetClient.stopServer()
+                    onConnectToServer(false)
                 }
             }
-            else if (message is GameMessage.SuccessMessage)
-                if(message.code == 0.toShort() && isConnected) {
+            else if (message is GameMessage.SuccessMessage) {
+                if (message.code == 0.toShort() && isConnected) {
                     game.startGame(username)
                 }
+            }
+            else if (message is GameMessage.InfoMessage){
+                if(message.details == "PlayerID")
+                    game.id = message.payload
+            }
         }
 
         stage.act(Gdx.graphics.deltaTime)

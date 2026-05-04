@@ -94,10 +94,13 @@ class LoadingScreen(private val game: Main) : KtxScreen {
             else if(message is GameMessage.RegisterMessage) {
                 label.setText(message.playerName)
             }
+            else if(message is GameMessage.NewEntityMessage){
+                game.map.addEntity(message)
+            }
             else if(message is GameMessage.LoadMapMessage){
                 updates++
 
-                for (x in 0..<(mapX-1)) {
+                for (x in 0..<(message.tiles.size)) {
                     game.map.tiles[message.y.toInt()][x] = message.tiles[x]
                 }
 

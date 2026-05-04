@@ -28,7 +28,16 @@ enum class GameMessageType(val type: Byte) {
     SUCCESS(2.toByte()),
     INFO(3.toByte()),
     TILE_UPDATE(4.toByte()),
-    LOAD_MAP(5.toByte());
+    LOAD_MAP(5.toByte()),
+    NEW_ENTITY(6.toByte());
+
+    companion object {
+        fun fromByte(type: Byte) = entries.first { it.type == type }
+    }
+}
+
+enum class EntityType(val type: Byte) {
+    DEFAULT(0.toByte());
 
     companion object {
         fun fromByte(type: Byte) = entries.first { it.type == type }
@@ -179,7 +188,10 @@ sealed class GameMessage(val type: GameMessageType) : Serializable {
                 val tiles = arrayOfNulls<Short>(length.toInt())
 
                 for (i in 0..<length) {
-                    tiles[i] = bb.get().toShort()
+                    val x = 0x00 + bb.get()
+                    println(x)
+                    tiles[i] = x.toShort()
+                    println(tiles[i])
                 }
 
                 return LoadMapMessage(y, length,  tiles.filterNotNull().toTypedArray())
@@ -202,6 +214,28 @@ sealed class GameMessage(val type: GameMessageType) : Serializable {
             var result = length.toInt()
             result = 31 * result + tiles.contentHashCode()
             return result
+        }
+    }
+
+    data class NewEntityMessage(val id : Short, val entityType : EntityType) : GameMessage(GameMessageType.NEW_ENTITY) {
+        override fun serialize() : ByteArray {
+            val ba = ByteArray(4)
+            ba[1] = type.type
+            ba[2] = id.toByte()
+            ba[3] = entityType.type
+
+            ba[0] = (ba.size.toShort() - 1).toByte()
+
+            return ba
+        }
+
+        companion object : Deserializable {
+            override fun deserialize(bb: ByteBuffer) : GameMessage {
+                val id = bb.get().toShort()
+                val entityType = EntityType.fromByte(bb.get())
+
+                return NewEntityMessage(id,entityType)
+            }
         }
     }
 }
@@ -232,6 +266,8 @@ object GameMessageFactory {
             GameMessageType.TILE_UPDATE -> GameMessage.TileUpdateMessage.deserialize(bb)
 
             GameMessageType.LOAD_MAP -> GameMessage.LoadMapMessage.deserialize(bb)
+
+            GameMessageType.NEW_ENTITY -> GameMessage.NewEntityMessage.deserialize(bb)
         }
     }
 }
