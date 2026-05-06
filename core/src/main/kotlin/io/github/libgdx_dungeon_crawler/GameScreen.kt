@@ -5,9 +5,14 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.utils.viewport.FitViewport
 import ktx.app.KtxScreen
 
+enum class GameState(val type: Int) {
+    DEFAULT(0),
+    MOVING(1);
+}
 
 class GameScreen(val game: Main): KtxScreen {
 
@@ -21,7 +26,7 @@ class GameScreen(val game: Main): KtxScreen {
         entityGroup = Group()
 
         game.map.createAllEntities(entityGroup)
-        game.map.createTiles(tileGroup)
+        game.map.createTiles(tileGroup, this)
 
         base.addActor(tileGroup)
         base.addActor(entityGroup)
@@ -38,6 +43,8 @@ class GameScreen(val game: Main): KtxScreen {
     lateinit var stage : Stage
     var isTurn = false
     lateinit var playerActor : EntityActor
+    var selectedTile : TileActor? = null
+    var state = GameState.DEFAULT
 
     override fun pause() {
 
@@ -58,14 +65,47 @@ class GameScreen(val game: Main): KtxScreen {
         if( message != null) {
             if (message is GameMessage.TileUpdateMessage){
                 game.map.moveEntity(message.x.toInt(), message.y.toInt(), message.occupiedId)
+
+                if(state == GameState.MOVING){
+                    state = GameState.DEFAULT
+                }
             }
-            if (message is GameMessage.InfoMessage) {
+            else if (message is GameMessage.InfoMessage) {
                 if(message.details == "BeginTurn"){
                     if(message.payload == game.id){
                         isTurn = true
+                        state = GameState.DEFAULT
+                    }
+                    else{
+                        isTurn = false
                     }
                 }
             }
+            else if (message is GameMessage.ErrorMessage){
+                if(message.code == 1.toShort()){
+                    state = GameState.DEFAULT
+                }
+
+                println(message.errorMessage)
+            }
+            else if(message is GameMessage.NewEntityMessage){
+                game.map.createAddEntity(entityGroup, message)
+            }
+        }
+
+        selectedTile?.let{
+            if(isTurn){
+                if(state == GameState.DEFAULT){
+                    NetClient.sendMessage(GameMessage.TileUpdateMessage(
+                        selectedTile!!.coordX.toShort(),
+                        selectedTile!!.coordY.toShort(),
+                        game.id))
+
+                    state = GameState.MOVING
+                }
+            }
+
+            selectedTile = null
         }
 
         Gdx.gl.glClearColor(Color.BLACK.r, Color.BLACK.g, Color.BLACK.b, Color.BLACK.a)

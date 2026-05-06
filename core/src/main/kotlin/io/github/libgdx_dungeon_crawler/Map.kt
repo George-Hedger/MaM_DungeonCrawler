@@ -28,6 +28,8 @@ class Map(val mapX: Int, val mapY: Int) {
         e.setSize(
             (mapSize.toFloat() - tileSpacing),
             (mapSize.toFloat() - tileSpacing))
+        e.height = mapSize.toFloat() - tileSpacing
+        e.width = mapSize.toFloat() - tileSpacing
 
         entities.put(msg.id, e)
         return e
@@ -64,7 +66,7 @@ class Map(val mapX: Int, val mapY: Int) {
         }
     }
 
-    fun createTiles(group: Group){
+    fun createTiles(group: Group, screen : GameScreen){
         for (y in 0..<mapY){
             for (x in 0..<mapX){
 
@@ -72,9 +74,9 @@ class Map(val mapX: Int, val mapY: Int) {
                 var t: TileActor
 
                 if(state == (-2).toShort())
-                    t = TileActor(wall, x, y)
+                    t = TileActor(wall, x, y, screen)
                 else
-                    t = TileActor(floor, x, y)
+                    t = TileActor(floor, x, y, screen)
 
                 t.setPosition(x*mapSize,y*mapSize)
                 t.setSize(

@@ -3,6 +3,10 @@ package io.github.libgdx_dungeon_crawler
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.InputListener
+
+
 
 class EntityActor(val region: TextureRegion, val type: EntityType) : Actor() {
     init{
@@ -22,10 +26,9 @@ class EntityActor(val region: TextureRegion, val type: EntityType) : Actor() {
 
     var coordX = -1
 
-
     fun setCoords(_x: Int, _y: Int, mapSize: Int){
         coordX = _x
         coordY = _y
-        setPosition(x*mapSize, y*mapSize)
+        setPosition((coordX*mapSize).toFloat(), (coordY*mapSize).toFloat())
     }
 }

@@ -173,7 +173,7 @@ sealed class GameMessage(val type: GameMessageType) : Serializable {
             ba[3] = length.toByte()
 
             for (i in 0..<length) {
-                ba[i + 4] = tiles[i].toByte()
+                ba[i + 4] = (tiles[i] + 3).toByte()
             }
 
             ba[0] = (ba.size.toShort() - 1).toByte()
@@ -188,10 +188,7 @@ sealed class GameMessage(val type: GameMessageType) : Serializable {
                 val tiles = arrayOfNulls<Short>(length.toInt())
 
                 for (i in 0..<length) {
-                    val x = 0x00 + bb.get()
-                    println(x)
-                    tiles[i] = x.toShort()
-                    println(tiles[i])
+                    tiles[i] = (bb.get().toShort() - 3.toShort()).toShort()
                 }
 
                 return LoadMapMessage(y, length,  tiles.filterNotNull().toTypedArray())
